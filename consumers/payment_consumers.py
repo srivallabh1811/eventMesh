@@ -1,10 +1,16 @@
 import json
+import os
 import time
 import random
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 from confluent_kafka import Consumer, Producer
 
-BOOTSTRAP_SERVERS = "localhost:29092"
+# Load environment variables
+load_dotenv()
+
+BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS")
+
 INPUT_TOPIC = "order.created"
 OUTPUT_TOPIC = "payment.processed"
 CLIENT_ID = "payment-service"
@@ -78,7 +84,11 @@ def run():
                 callback=delivery_report,
             )
             producer.poll(0)
-            print(f"[payment-service] Processed order {payment_payload['order_id']} -> {payment_payload['status']}")
+
+            print(
+                f"[payment-service] Processed order {payment_payload['order_id']} -> {payment_payload['status']}"
+            )
+
     except KeyboardInterrupt:
         print("\n[payment-service] Shutting down...")
     finally:
@@ -87,4 +97,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run
+    run()

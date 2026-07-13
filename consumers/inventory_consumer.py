@@ -34,7 +34,7 @@ def delivery_report(err, msg):
 
 def process_order(order_payload, headers_dict):
     # Deliberately slow — this is what will cause real, visible lag
-    time.sleep(random.uniform(2.0, 4.0))
+    time.sleep(random.uniform(3.0, 5.0))
 
     inventory_payload = {
         "order_id": order_payload["order_id"],
