@@ -1,0 +1,188 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-body: #0f1117;
+  --bg-card: #171a23;
+  --bg-card-hover: #1c2029;
+  --border-color: #262b38;
+  --text-primary: #e4e6eb;
+  --text-secondary: #8b8f9b;
+  --text-muted: #6b7080;
+  --accent-blue: #4d8fdb;
+  --trend-worsening-bg: #3a1d1d;
+  --trend-worsening-text: #f5b8b5;
+  --trend-recovering-bg: #1d3a24;
+  --trend-recovering-text: #b5f5c4;
+  --trend-stable-bg: #262b38;
+  --trend-stable-text: #9aa0ac;
+  --node-producer-bg: #1d3a24;
+  --node-producer-text: #b5f5c4;
+  --node-producer-border: #2f6b3f;
+  --node-topic-bg: #1e222c;
+  --node-topic-text: #e4e6eb;
+  --node-topic-border: #3a4152;
+  --node-consumer-bg: #1d2a3a;
+  --node-consumer-text: #a8d4f5;
+  --node-consumer-border: #2f5a6b;
+}
+
+[data-theme="light"] {
+  --bg-body: #f4f6fa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f2f7;
+  --border-color: #e2e5ec;
+  --text-primary: #1c1f26;
+  --text-secondary: #5c6470;
+  --text-muted: #9aa0ac;
+  --accent-blue: #3568d4;
+  --trend-worsening-bg: #fde8e8;
+  --trend-worsening-text: #b13b3b;
+  --trend-recovering-bg: #e5f7ea;
+  --trend-recovering-text: #2f7d43;
+  --trend-stable-bg: #eef0f4;
+  --trend-stable-text: #6b7280;
+  --node-producer-bg: #e5f7ea;
+  --node-producer-text: #2f7d43;
+  --node-producer-border: #a8e0b6;
+  --node-topic-bg: #eef0f4;
+  --node-topic-text: #1c1f26;
+  --node-topic-border: #d8dce4;
+  --node-consumer-bg: #e6f0fb;
+  --node-consumer-text: #2a5ea8;
+  --node-consumer-border: #b0d0f0;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dashboard {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.dashboard-header-text h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-header-text p {
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+  margin-bottom: 0;
+}
+
+.theme-toggle {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.card h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+thead th {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--border-color);
+}
+
+tbody td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+tbody tr:hover {
+  background-color: var(--bg-card-hover);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.trend-badge {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.error-banner {
+  background-color: var(--trend-worsening-bg);
+  border: 1px solid var(--trend-worsening-text);
+  color: var(--trend-worsening-text);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+}
+
+@media (max-width: 800px) {
+  .grid-row {
+    grid-template-columns: 1fr;
+  }
+}
