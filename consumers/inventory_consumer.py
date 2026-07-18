@@ -3,6 +3,7 @@ import time
 import random
 from datetime import datetime, timezone
 from confluent_kafka import Consumer, Producer
+from shared.registration import register_producer
 
 BOOTSTRAP_SERVERS = "localhost:29092"
 INPUT_TOPIC = "order.created"
@@ -33,7 +34,6 @@ def delivery_report(err, msg):
 
 
 def process_order(order_payload, headers_dict):
-    # Deliberately slow — this is what will cause real, visible lag
     time.sleep(random.uniform(3.0, 5.0))
 
     inventory_payload = {
@@ -53,6 +53,8 @@ def process_order(order_payload, headers_dict):
 
 
 def run():
+    register_producer(CLIENT_ID, OUTPUT_TOPIC)
+
     consumer.subscribe([INPUT_TOPIC])
     print(f"[inventory-service] Consuming from '{INPUT_TOPIC}' (SLOW mode)...")
     try:

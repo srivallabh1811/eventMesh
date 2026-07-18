@@ -5,6 +5,7 @@ import random
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from confluent_kafka import Consumer, Producer
+from shared.registration import register_producer
 
 # Load environment variables
 load_dotenv()
@@ -48,8 +49,6 @@ def process_order(order_payload, headers_dict):
         "processed_at": datetime.now(timezone.utc).isoformat(),
     }
 
-    # Carry the trace-id + origin-ts forward so latency tracking
-    # can measure order.created -> payment.processed as one chain
     out_headers = [
         ("trace-id", headers_dict.get("trace-id", b"")),
         ("origin-ts", headers_dict.get("origin-ts", b"")),
@@ -60,6 +59,8 @@ def process_order(order_payload, headers_dict):
 
 
 def run():
+    register_producer(CLIENT_ID, OUTPUT_TOPIC)
+
     consumer.subscribe([INPUT_TOPIC])
     print(f"[payment-service] Consuming from '{INPUT_TOPIC}'...")
     try:

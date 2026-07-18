@@ -4,6 +4,7 @@ import uuid
 import random
 from datetime import datetime, timezone
 from confluent_kafka import Producer
+from shared.registration import register_producer
 
 BOOTSTRAP_SERVERS = "localhost:29092"
 TOPIC = "order.created"
@@ -46,6 +47,8 @@ def make_order_event():
 
 
 def run():
+    register_producer(CLIENT_ID, TOPIC)
+
     print(f"[order-service] Producing to '{TOPIC}' every ~2s. Ctrl+C to stop.")
     try:
         while True:
