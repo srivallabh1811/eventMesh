@@ -59,7 +59,7 @@ def process_order(order_payload, headers_dict):
 
 
 def run():
-    register_producer(CLIENT_ID, OUTPUT_TOPIC)
+    register_producer(CLIENT_ID, OUTPUT_TOPIC, consumer_group=GROUP_ID)
 
     consumer.subscribe([INPUT_TOPIC])
     print(f"[payment-service] Consuming from '{INPUT_TOPIC}'...")

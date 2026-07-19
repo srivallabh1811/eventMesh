@@ -1,4 +1,4 @@
-# collector/topology_listener.py
+# collector/topology_listner.py
 
 import os
 import json
@@ -8,9 +8,6 @@ from confluent_kafka import Consumer
 
 load_dotenv()
 
-# -----------------------------------
-# Kafka Configuration
-# -----------------------------------
 BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS")
 ANNOUNCEMENTS_TOPIC = "service.topology.announcements"
 
@@ -22,9 +19,6 @@ consumer = Consumer({
 
 consumer.subscribe([ANNOUNCEMENTS_TOPIC])
 
-# -----------------------------------
-# PostgreSQL Configuration
-# -----------------------------------
 db_conf = {
     "host": "localhost",
     "port": 5433,
@@ -35,15 +29,11 @@ db_conf = {
 
 print("[topology-listener] Listening for producer announcements...")
 
-# -----------------------------------
-# Connect to PostgreSQL once
-# -----------------------------------
 conn = psycopg2.connect(**db_conf)
 cur = conn.cursor()
 
 try:
     while True:
-
         msg = consumer.poll(1.0)
 
         if msg is None:
@@ -57,6 +47,7 @@ try:
 
         producer_client = announcement["producer_client"]
         topic = announcement["topic"]
+        consumer_group = announcement.get("consumer_group")
 
         cur.execute("""
             INSERT INTO producer_registrations
@@ -68,9 +59,22 @@ try:
             SET last_seen = now();
         """, (producer_client, topic))
 
-        conn.commit()
-
         print(f"[topology-listener] Registered {producer_client} -> {topic}")
+
+        if consumer_group:
+            cur.execute("""
+                INSERT INTO service_identities
+                    (producer_client, consumer_group, last_seen)
+                VALUES
+                    (%s, %s, now())
+                ON CONFLICT (producer_client, consumer_group)
+                DO UPDATE
+                SET last_seen = now();
+            """, (producer_client, consumer_group))
+
+            print(f"[topology-listener] Linked identity: {producer_client} <-> {consumer_group}")
+
+        conn.commit()
 
 except KeyboardInterrupt:
     print("\nStopping topology listener...")
