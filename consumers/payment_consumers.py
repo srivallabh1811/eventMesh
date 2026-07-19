@@ -12,6 +12,7 @@ load_dotenv()
 
 BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS")
 
+DLQ_TOPIC = "payment.processed.dlq"
 INPUT_TOPIC = "order.created"
 OUTPUT_TOPIC = "payment.processed"
 CLIENT_ID = "payment-service"
@@ -39,15 +40,29 @@ def delivery_report(err, msg):
         print(f"[payment-service] Delivery failed: {err}")
 
 
+FAILURE_REASONS = ["CARD_DECLINED", "INSUFFICIENT_FUNDS", "GATEWAY_TIMEOUT", "FRAUD_SUSPECTED"]
+
+
 def process_order(order_payload, headers_dict):
     time.sleep(random.uniform(0.1, 0.3))
 
-    payment_payload = {
-        "order_id": order_payload["order_id"],
-        "amount": order_payload["amount"],
-        "status": "success" if random.random() > 0.05 else "failed",
-        "processed_at": datetime.now(timezone.utc).isoformat(),
-    }
+    is_failure = random.random() <= 0.09
+
+    if is_failure:
+        payment_payload = {
+            "order_id": order_payload["order_id"],
+            "amount": order_payload["amount"],
+            "status": "failed",
+            "error_type": random.choice(FAILURE_REASONS),
+            "processed_at": datetime.now(timezone.utc).isoformat(),
+        }
+    else:
+        payment_payload = {
+            "order_id": order_payload["order_id"],
+            "amount": order_payload["amount"],
+            "status": "success",
+            "processed_at": datetime.now(timezone.utc).isoformat(),
+        }
 
     out_headers = [
         ("trace-id", headers_dict.get("trace-id", b"")),
@@ -55,12 +70,11 @@ def process_order(order_payload, headers_dict):
         ("event-type", b"payment.processed"),
     ]
 
-    return payment_payload, out_headers
-
+    return payment_payload, out_headers, is_failure
 
 def run():
     register_producer(CLIENT_ID, OUTPUT_TOPIC, consumer_group=GROUP_ID)
-
+    register_producer(CLIENT_ID, DLQ_TOPIC, consumer_group=GROUP_ID)
     consumer.subscribe([INPUT_TOPIC])
     print(f"[payment-service] Consuming from '{INPUT_TOPIC}'...")
     try:
@@ -75,20 +89,28 @@ def run():
             order_payload = json.loads(msg.value())
             headers_dict = dict(msg.headers() or [])
 
-            payment_payload, out_headers = process_order(order_payload, headers_dict)
+            payment_payload, out_headers, is_failure = process_order(order_payload, headers_dict)
 
-            producer.produce(
-                topic=OUTPUT_TOPIC,
-                key=payment_payload["order_id"],
-                value=json.dumps(payment_payload),
-                headers=out_headers,
-                callback=delivery_report,
-            )
-            producer.poll(0)
-
-            print(
-                f"[payment-service] Processed order {payment_payload['order_id']} -> {payment_payload['status']}"
-            )
+            if is_failure:
+                producer.produce(
+                    topic=DLQ_TOPIC,
+                    key=payment_payload["order_id"],
+                    value=json.dumps(payment_payload),
+                    headers=out_headers,
+                    callback=delivery_report,
+                )
+                producer.poll(0)
+                print(f"[payment-service] DEAD-LETTERED order {payment_payload['order_id']} -> {payment_payload['error_type']}")
+            else:
+                producer.produce(
+                    topic=OUTPUT_TOPIC,
+                    key=payment_payload["order_id"],
+                    value=json.dumps(payment_payload),
+                    headers=out_headers,
+                    callback=delivery_report,
+                )
+                producer.poll(0)
+                print(f"[payment-service] Processed order {payment_payload['order_id']} -> {payment_payload['status']}")
 
     except KeyboardInterrupt:
         print("\n[payment-service] Shutting down...")
