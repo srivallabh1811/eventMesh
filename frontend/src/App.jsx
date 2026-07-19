@@ -1,21 +1,33 @@
 import { useEffect, useState } from "react";
-import { getLag, getVelocity, getThresholds, getTopology, getCascade } from "./api";
+import { getLag, getVelocity, getThresholds, getTopology, getCascade, getDLQ } from "./api";
 import LagTable from "./components/LagTable";
 import VelocityTable from "./components/VelocityTable";
 import ThresholdsTable from "./components/ThresholdsTable";
 import TopologyGraph from "./components/TopologyGraph";
 import CascadeList from "./components/CascadeList";
+import DLQTable from "./components/DLQTable";
 import ThemeToggle from "./ThemeToggle";
 import "./App.css";
 
 const REFRESH_INTERVAL_MS = 5000;
 
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "lag", label: "Consumer Lag" },
+  { id: "velocity", label: "Velocity & Trend" },
+  { id: "thresholds", label: "Thresholds" },
+  { id: "dlq", label: "Dead Letter Queue" },
+];
+
 function App() {
+  const [activeTab, setActiveTab] = useState("overview");
+
   const [lag, setLag] = useState([]);
   const [velocity, setVelocity] = useState([]);
   const [thresholds, setThresholds] = useState([]);
   const [topology, setTopology] = useState([]);
   const [cascade, setCascade] = useState([]);
+  const [dlq, setDlq] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -64,6 +76,15 @@ function App() {
           console.warn("Cascade fetch failed, keeping previous data:", err.message);
           setError(err.message);
         });
+
+      getDLQ()
+        .then((res) => {
+          if (Array.isArray(res)) setDlq(res);
+        })
+        .catch((err) => {
+          console.warn("DLQ fetch failed, keeping previous data:", err.message);
+          setError(err.message);
+        });
     }
 
     fetchAll();
@@ -83,32 +104,58 @@ function App() {
 
       {error && <div className="error-banner">Error: {error}</div>}
 
-      <div className="card">
-        <h2>Service Topology</h2>
-        <TopologyGraph data={topology} cascadeData={cascade} />
+      <div className="tab-bar">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="card">
-        <h2>Cascade Risk</h2>
-        <CascadeList data={cascade} />
-      </div>
+      {activeTab === "overview" && (
+        <>
+          <div className="card">
+            <h2>Service Topology</h2>
+            <TopologyGraph data={topology} cascadeData={cascade} />
+          </div>
+          <div className="card">
+            <h2>Cascade Risk</h2>
+            <CascadeList data={cascade} />
+          </div>
+        </>
+      )}
 
-      <div className="grid-row">
+      {activeTab === "lag" && (
         <div className="card">
           <h2>Consumer Lag</h2>
           <LagTable data={lag} />
         </div>
+      )}
 
+      {activeTab === "velocity" && (
+        <div className="card">
+          <h2>Velocity &amp; Trend</h2>
+          <VelocityTable data={velocity} />
+        </div>
+      )}
+
+      {activeTab === "thresholds" && (
         <div className="card">
           <h2>SLA Thresholds</h2>
           <ThresholdsTable data={thresholds} />
         </div>
-      </div>
+      )}
 
-      <div className="card">
-        <h2>Velocity &amp; Trend</h2>
-        <VelocityTable data={velocity} />
-      </div>
+      {activeTab === "dlq" && (
+        <div className="card">
+          <h2>Dead Letter Queue</h2>
+          <DLQTable data={dlq} />
+        </div>
+      )}
     </div>
   );
 }

@@ -27,3 +27,7 @@ export function getThresholds() {
 export function getCascade() {
   return fetchJson("/cascade");
 }
+
+export function getDLQ() {
+  return fetchJson("/dlq");
+}
