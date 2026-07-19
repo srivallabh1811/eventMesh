@@ -23,3 +23,7 @@ export function getTopology() {
 export function getThresholds() {
   return fetchJson("/thresholds");
 }
+
+export function getCascade() {
+  return fetchJson("/cascade");
+}
