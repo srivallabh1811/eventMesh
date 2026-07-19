@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import lag, velocity, topology, thresholds
+from app.routers import lag, velocity, topology, thresholds,cascade
 
 app = FastAPI(title="EventMesh API")
 
@@ -22,3 +22,4 @@ app.include_router(lag.router)
 app.include_router(velocity.router)
 app.include_router(topology.router)
 app.include_router(thresholds.router)
+app.include_router(cascade.router)
