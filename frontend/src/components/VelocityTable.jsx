@@ -19,6 +19,7 @@ function VelocityTable({ data }) {
   }
 
   return (
+     <div className="table-scroll">
     <table>
       <thead>
         <tr>
@@ -49,6 +50,7 @@ function VelocityTable({ data }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 

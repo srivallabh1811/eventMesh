@@ -3,6 +3,7 @@ function LagTable({ data }) {
   return <p className="empty-state">No lag data available.</p>;
 }
   return (
+  <div className="table-scroll">
     <table>
       <thead>
         <tr>
@@ -20,11 +21,12 @@ function LagTable({ data }) {
             <td>{row.topic}</td>
             <td>{row.partition}</td>
             <td>{row.lag}</td>
-            <td>{new Date(row.time).toLocaleString()}</td>
+            <td>{new Date(row.time).toLocaleTimeString()}</td>
           </tr>
         ))}
       </tbody>
     </table>
+  </div>
   );
 }
 

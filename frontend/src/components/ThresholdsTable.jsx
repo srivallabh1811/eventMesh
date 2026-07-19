@@ -4,6 +4,7 @@ function ThresholdsTable({ data }) {
   }
 
   return (
+    <div className="table-scroll">
     <table>
       <thead>
         <tr>
@@ -24,6 +25,7 @@ function ThresholdsTable({ data }) {
         ))}
       </tbody>
     </table>
+   </div>
   );
 }
 
